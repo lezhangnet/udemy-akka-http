@@ -204,7 +204,7 @@ object LowLevelAPI extends App {
     // path /search redirects to some other part of our website/webapp/microservice
     case HttpRequest(HttpMethods.GET, Uri.Path("/search"), _, _, _) =>
       HttpResponse(
-        StatusCodes.Found,
+        StatusCodes.Found, // 302
         headers = List(Location("http://google.com"))
       )
 
