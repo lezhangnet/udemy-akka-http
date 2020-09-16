@@ -45,15 +45,15 @@ object DirectivesBreakdown extends App {
   val dontConfuse =
     path("api/myEndpoint") {
       complete(StatusCodes.OK)
-    }
+    } // localhost:8080/api%2FmyEndpoint // DO NOT USE THIS !
 
   val pathEndRoute =
     pathEndOrSingleSlash { // localhost:8080 OR localhost:8080/
       complete(StatusCodes.OK)
     }
 
-  //  Http().bindAndHandle(complexPathRoute, "localhost", 8080)
-
+  // Http().bindAndHandle(complexPathRoute, "localhost", 8080)
+  // Http().bindAndHandle(dontConfuse, "localhost", 8080)
 
   /**
     * Type #2: extraction directives
@@ -85,14 +85,33 @@ object DirectivesBreakdown extends App {
   val extractRequestRoute =
     path("controlEndpoint") {
       extractRequest { (httpRequest: HttpRequest) =>
+        println(s"I got http request: $httpRequest")
         extractLog { (log: LoggingAdapter) =>
           log.info(s"I got the http request: $httpRequest")
           complete(StatusCodes.OK)
         }
       }
     }
+  /*
+  HttpRequest(
+    HttpMethod(GET),
+    http://localhost:8080/controlEndpoint,
+    List( // headers
+      User-Agent: PostmanRuntime/7.26.1,
+      Accept: +/+,
+      Cache-Control: no-cache,
+      Postman-Token: 8eb3b3a1-dc3f-4ba8-a5be-0d29f94f8cdc,
+      Host: localhost:8080,
+      Accept-Encoding: gzip, deflate, br,
+      Connection: keep-alive,
+      Timeout-Access: <function1> // ???
+    ),
+    HttpEntity.Strict(none/none,ByteString()),
+    HttpProtocol(HTTP/1.1)
+  )
+   */
 
-  Http().bindAndHandle(queryParamExtractionRoute, "localhost", 8080)
+  // Http().bindAndHandle(extractRequestRoute, "localhost", 8080)
 
   /**
     * Type #3: composite directives
@@ -105,10 +124,12 @@ object DirectivesBreakdown extends App {
       }
     }
 
+  // filter & filter
   val compactSimpleNestedRoute = (path("api" / "item") & get) {
     complete(StatusCodes.OK)
   }
 
+  // filter & extract
   val compactExtractRequestRoute =
     (path("controlEndpoint") & extractRequest & extractLog) { (request, log) =>
       log.info(s"I got the http request: $request")
@@ -143,6 +164,7 @@ object DirectivesBreakdown extends App {
       complete(StatusCodes.OK)
     }
 
+  // extraction needs to be the same values to be combined
   val combinedBlodByIdRoute =
     (path(IntNumber) | parameter('postId.as[Int])) { (blogpostId: Int) =>
       // your original server logic

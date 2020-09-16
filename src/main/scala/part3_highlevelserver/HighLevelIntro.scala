@@ -18,12 +18,13 @@ object HighLevelIntro extends App {
 
   val simpleRoute: Route =
     path("home") { // DIRECTIVE
+      // matches both GET and POST
       complete(StatusCodes.OK) // DIRECTIVE
     }
 
   val pathGetRoute: Route =
     path("home") {
-      get {
+      get { // POST will fail with 405
         complete(StatusCodes.OK)
       }
     }
@@ -34,9 +35,9 @@ object HighLevelIntro extends App {
     path("myEndpoint") {
       get {
         complete(StatusCodes.OK)
-      } /* VERY IMPORTANT ---> */ ~
+      } ~ /* VERY IMPORTANT */
       post {
-        complete(StatusCodes.Forbidden)
+        complete(StatusCodes.Forbidden) // 403
       }
     } ~
     path("home") {
@@ -54,8 +55,7 @@ object HighLevelIntro extends App {
       )
     } // Routing tree
 
-
-  Http().bindAndHandle(pathGetRoute, "localhost", 8080)
-
-
+  // Http().bindAndHandle(simpleRoute, "localhost", 8080)
+  // Http().bindAndHandle(pathGetRoute, "localhost", 8080)
+  Http().bindAndHandle(chainedRoute, "localhost", 8080)
 }

@@ -51,6 +51,7 @@ object HighLevelExample extends App with GuitarStoreJsonProtocol {
       // ALWAYS PUT THE MORE SPECIFIC ROUTE FIRST
       parameter('id.as[Int]) { guitarId =>
         get {
+          println("GET /api/guitar?id=x")
           val guitarFuture: Future[Option[Guitar]] = (guitarDb ? FindGuitar(guitarId)).mapTo[Option[Guitar]]
           val entityFuture = guitarFuture.map { guitarOption =>
             HttpEntity(
@@ -62,6 +63,7 @@ object HighLevelExample extends App with GuitarStoreJsonProtocol {
         }
       } ~
       get {
+        println("GET /api/guitar")
         val guitarsFuture: Future[List[Guitar]] = (guitarDb ? FindAllGuitars).mapTo[List[Guitar]]
         val entityFuture = guitarsFuture.map { guitars =>
           HttpEntity(
@@ -101,6 +103,7 @@ object HighLevelExample extends App with GuitarStoreJsonProtocol {
       }
     }
 
+  // Http().bindAndHandle(guitarServerRoute, "localhost", 8080)
 
   def toHttpEntity(payload: String) = HttpEntity(ContentTypes.`application/json`, payload)
 

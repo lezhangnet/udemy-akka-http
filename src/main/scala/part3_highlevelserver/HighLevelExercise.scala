@@ -66,13 +66,13 @@ object HighLevelExercise extends App with PersonJsonProtocol {
         val strictEntityFuture = entity.toStrict(2 seconds)
         val personFuture = strictEntityFuture.map(_.data.utf8String.parseJson.convertTo[Person])
 
-        onComplete(personFuture) {
+        onComplete(personFuture) { // directive
           case Success(person) =>
             log.info(s"Got person: $person")
             people = people :+ person
             complete(StatusCodes.OK)
           case Failure(ex) =>
-            failWith(ex)
+            failWith(ex) // bubble up the ex
         }
 
 //        // "side-effect"

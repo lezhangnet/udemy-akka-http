@@ -38,8 +38,6 @@ object LowLevelHttps extends App {
   implicit val system = ActorSystem("LowLevelHttps")
   implicit val materrializer = ActorMaterializer()
 
-
-
   val requestHandler: HttpRequest => HttpResponse = {
     case HttpRequest(HttpMethods.GET, _, _, _, _) =>
       HttpResponse(
@@ -49,7 +47,7 @@ object LowLevelHttps extends App {
           """
             |<html>
             | <body>
-            |   Hello from Akka HTTP!
+            |   Hello from Akka HTTPS!
             | </body>
             |</html>
           """.stripMargin
@@ -74,5 +72,4 @@ object LowLevelHttps extends App {
   }
 
   val httpsBinding = Http().bindAndHandleSync(requestHandler, "localhost", 8443, HttpsContext.httpsConnectionContext)
-
 }
