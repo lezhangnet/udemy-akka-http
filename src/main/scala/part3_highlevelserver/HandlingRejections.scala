@@ -55,7 +55,7 @@ object HandlingRejections extends App {
 //  Http().bindAndHandle(simpleRouteWithHandlers, "localhost", 8080)
 
   // list(method rejection, query param rejection)
-  implicit val customRejectionHandler = RejectionHandler.newBuilder()
+  implicit val customRejectionHandler: RejectionHandler = RejectionHandler.newBuilder()
     .handle {
       case m: MissingQueryParamRejection =>
         println(s"I got a query param rejection: $m")
@@ -70,6 +70,7 @@ object HandlingRejections extends App {
 
   // sealing a route
 
+  // RejectionHandler.default // ???
   Http().bindAndHandle(simpleRoute, "localhost", 8080)
 
 }

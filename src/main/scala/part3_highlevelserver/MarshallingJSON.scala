@@ -77,7 +77,6 @@ object MarshallingJSON extends App
     Player("rolandbraveheart007", "Elf", 67),
     Player("daniel_rock03", "Wizard", 30)
   )
-
   playersList.foreach { player =>
     rtjvmGameMap ! AddPlayer(player)
   }
@@ -95,29 +94,28 @@ object MarshallingJSON extends App
   val rtjvmGameRouteSkel =
     pathPrefix("api" / "player") {
       get {
-        path("class" / Segment) { characterClass =>
+        path("class" / Segment) { characterClass => // Segment for extracting string
           val playersByClassFuture = (rtjvmGameMap ? GetPlayersByClass(characterClass)).mapTo[List[Player]]
           complete(playersByClassFuture)
-
         } ~
-          (path(Segment) | parameter('nickname)) { nickname =>
-            val playerOptionFuture = (rtjvmGameMap ? GetPlayer(nickname)).mapTo[Option[Player]]
-            complete(playerOptionFuture)
-          } ~
-          pathEndOrSingleSlash {
-            complete((rtjvmGameMap ? GetAllPlayers).mapTo[List[Player]])
-          }
-      } ~
-        post {
-          entity(implicitly[FromRequestUnmarshaller[Player]]) { player =>
-            complete((rtjvmGameMap ? AddPlayer(player)).map(_ => StatusCodes.OK))
-          }
+        (path(Segment) | parameter('nickname)) { nickname =>
+          val playerOptionFuture = (rtjvmGameMap ? GetPlayer(nickname)).mapTo[Option[Player]]
+          complete(playerOptionFuture)
         } ~
-        delete {
-          entity(as[Player]) { player =>
-            complete((rtjvmGameMap ? RemovePlayer(player)).map(_ => StatusCodes.OK))
-          }
+        pathEndOrSingleSlash {
+          complete((rtjvmGameMap ? GetAllPlayers).mapTo[List[Player]])
         }
+      } ~
+      post {
+        entity(implicitly[FromRequestUnmarshaller[Player]]) { player => // demo only, use as[] below
+          complete((rtjvmGameMap ? AddPlayer(player)).map(_ => StatusCodes.OK))
+        }
+      } ~
+      delete {
+        entity(as[Player]) { player =>
+          complete((rtjvmGameMap ? RemovePlayer(player)).map(_ => StatusCodes.OK))
+        }
+      }
     }
 
   Http().bindAndHandle(rtjvmGameRouteSkel, "localhost", 8080)

@@ -21,8 +21,8 @@ class RouteDSLSpec extends WordSpec with Matchers with ScalatestRouteTest with B
 
   import RouteDSLSpec._
 
-  "A digital library backend" should {
-    "return all the books in the library" in {
+  "A digital library backend" should {          // test suite
+    "return all the books in the library" in {  // single test
       // send an HTTP request through an endpoint that you want to test
       // inspect the response
       Get("/api/book") ~> libraryRoute ~> check {

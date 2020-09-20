@@ -29,6 +29,8 @@ object HandlingExceptions extends App {
       }
     }
 
+  // default exception handler: 500
+
   implicit val customExceptionHandler: ExceptionHandler = ExceptionHandler {
     case e: RuntimeException =>
       complete(StatusCodes.NotFound, e.getMessage)

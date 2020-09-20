@@ -22,7 +22,7 @@ object WebsocketsDemo extends App {
   val textMessage = TextMessage(Source.single("hello via a text message"))
   val binaryMessage = BinaryMessage(Source.single(CompactByteString("hello via a binary message")))
 
-
+  // ref src/main/html/websockets.html
   val html =
     """
       |<html>
@@ -31,17 +31,23 @@ object WebsocketsDemo extends App {
       |            var exampleSocket = new WebSocket("ws://localhost:8080/greeter");
       |            console.log("starting websocket...");
       |
+      |            // listener
       |            exampleSocket.onmessage = function(event) {
+      |                console.log("onmessage...")
       |                var newChild = document.createElement("div");
       |                newChild.innerText = event.data;
       |                document.getElementById("1").appendChild(newChild);
       |            };
       |
       |            exampleSocket.onopen = function(event) {
+      |                console.log("onopen...")
       |                exampleSocket.send("socket seems to be open...");
       |            };
       |
+      |            console.log("sending...")
       |            exampleSocket.send("socket says: hello, server!");
+      |            // ERROR: Uncaught DOMException: Failed to execute 'send' on 'WebSocket': Still in CONNECTING state.
+      |            // i.e. web socket NOT open yet
       |        </script>
       |    </head>
       |
@@ -54,11 +60,13 @@ object WebsocketsDemo extends App {
       |</html>
     """.stripMargin
 
-
+  // flow from incoming message to output message
   def websocketFlow: Flow[Message, Message, Any] = Flow[Message].map {
     case tm: TextMessage =>
-      TextMessage(Source.single("Server says back:") ++ tm.textStream ++ Source.single("!"))
+      println("received TextMessage: " + tm)
+      TextMessage(Source.single("Server says back: ") ++ tm.textStream ++ Source.single("!"))
     case bm: BinaryMessage =>
+      println("received BinaryMessage")
       bm.dataStream.runWith(Sink.ignore)
       TextMessage(Source.single("Server received a binary message..."))
   }
@@ -73,7 +81,9 @@ object WebsocketsDemo extends App {
       )
     } ~
     path("greeter") {
-      handleWebSocketMessages(socialFlow)
+      println("/greeter...")
+      handleWebSocketMessages(websocketFlow)
+      // handleWebSocketMessages(socialFlow)
     }
 
   Http().bindAndHandle(websocketRoute, "localhost", 8080)

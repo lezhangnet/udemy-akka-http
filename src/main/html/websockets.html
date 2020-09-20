@@ -4,17 +4,23 @@
             var exampleSocket = new WebSocket("ws://localhost:8080/greeter");
             console.log("starting websocket...");
 
+            // listener
             exampleSocket.onmessage = function(event) {
+                console.log("onmessage...")
                 var newChild = document.createElement("div");
                 newChild.innerText = event.data;
                 document.getElementById("1").appendChild(newChild);
             };
 
             exampleSocket.onopen = function(event) {
+                console.log("onopen...")
                 exampleSocket.send("socket seems to be open...");
             };
 
+            console.log("sending...")
             exampleSocket.send("socket says: hello, server!");
+            // ERROR: Uncaught DOMException: Failed to execute 'send' on 'WebSocket': Still in CONNECTING state.
+            // i.e. web socket NOT open yet
         </script>
     </head>
 
