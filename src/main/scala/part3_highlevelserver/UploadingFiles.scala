@@ -6,7 +6,7 @@ import akka.Done
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, Multipart}
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, IOResult}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.scaladsl.{FileIO, Sink, Source}
 import akka.util.ByteString
@@ -15,6 +15,7 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 object UploadingFiles extends App {
+  println ("UploadingFiles")
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
@@ -53,19 +54,23 @@ object UploadingFiles extends App {
             val filename = "src/main/resources/download/" + bodyPart.filename.getOrElse("tempFile_" + System.currentTimeMillis())
             val file = new File(filename)
 
-            log.info(s"Writing to file: $filename")
+            log.info(s"Writing to file: $filename; file.toPath: ${file.toPath}")
 
             val fileContentsSource: Source[ByteString, _] = bodyPart.entity.dataBytes
-            val fileContentsSink: Sink[ByteString, _] = FileIO.toPath(file.toPath)
+            val fileContentsSink: Sink[ByteString, Future[IOResult]] = FileIO.toPath(file.toPath)
 
             // writing the data to the file
-            fileContentsSource.runWith(fileContentsSink)
+            val fileFuture = fileContentsSource.runWith(fileContentsSink)
+            fileFuture.onComplete {
+              case Success(value) => value
+              case Failure(exception) => println("Wrinting to file failed with: " + exception)
+            }
           }
         }
 
         val writeOperationFuture = partsSource.runWith(filePartsSink)
         onComplete(writeOperationFuture) {
-          case Success(_) => complete("File uploaded.")
+          case Success(value) => complete("File uploaded: " + value) // File uploaded: Done ?!
           case Failure(ex) => complete(s"File failed to upload: $ex")
         }
       }

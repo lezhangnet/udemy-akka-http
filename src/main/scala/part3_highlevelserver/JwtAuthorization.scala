@@ -46,7 +46,8 @@ object JwtAuthorization extends App with SprayJsonSupport {
       subject = Some(username)
     )
 
-    JwtSprayJson.encode(claims, secretKey, algorithm) // JWT string
+    JwtSprayJson.encode(claims, secretKey, algorithm) // JWT string, e.g.
+    // eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJyb2NrdGhlanZtLmNvbSIsInN1YiI6ImRhbmllbCIsImV4cCI6MTYwMDczNTM4OCwiaWF0IjoxNjAwNjQ4OTg4fQ.FIEX6P6YUj_d8VD7UR0OO9CedW8O13bVOjwx5endclg
   }
 
   def isTokenExpired(token: String): Boolean = JwtSprayJson.decode(token, secretKey, Seq(algorithm)) match {
@@ -62,7 +63,7 @@ object JwtAuthorization extends App with SprayJsonSupport {
         case LoginRequest(username, password) if checkPassword(username, password) =>
           val token = createToken(username, 1)
           respondWithHeader(RawHeader("Access-Token", token)) {
-            complete(StatusCodes.OK)
+            complete(HttpResponse(StatusCodes.OK, entity = token))
           }
         case _ => complete(StatusCodes.Unauthorized)
       }
