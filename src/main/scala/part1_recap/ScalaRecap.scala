@@ -90,7 +90,7 @@ object ScalaRecap extends App {
   implicit val timeout = 3000
   def setTimeout(f: () => Unit)(implicit timeout: Int) = f()
 
-  setTimeout(() => println("timeout"))// other arg list injected by the compiler
+  setTimeout(() => println("timeout:" + timeout))// other arg list injected by the compiler
 
   // conversions
   // 1) implicit methods
